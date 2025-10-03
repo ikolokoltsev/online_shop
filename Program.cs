@@ -1,9 +1,13 @@
 ﻿using UserApp;
+using ItemApp;
 using static IOUtilsApp.IOUtils;
 
 bool is_main_menu = true;
 List<User> users = new List<User>();
 users.Add(new User("admin", "admin@mail.com", "adMin"));
+List<Item> items = new List<Item>();
+items.Add(new Item("Ball", "it's a ball! 🤷🏻‍♂️", 13.5, "admin"));
+items.Add(new Item("Table", null, 13.5, "admin"));
 User? active_user = null;
 
 
@@ -12,19 +16,54 @@ while (is_main_menu)
     ColorizedPrint("Welcome to the Best Shop Ever!");
     if (active_user != null)
     {
-        // AuthorizedMenu
         bool is_authorized_menu = true;
-        ColorizedPrint("Authorized!");
-        ColorizedPrint($"Hello {active_user.Username}");
-        ColorizedPrint("Please select an option:");
-        ColorizedPrint("1. Logout");
-
-        string authorized_menu_input = StringUserInput();
         while (is_authorized_menu)
         {
+            // AuthorizedMenu
+            ColorizedPrint("Authorized!");
+            ColorizedPrint($"Hello {active_user.Username}");
+            ColorizedPrint("Please select an option:");
+            ColorizedPrint("1. Add new item");
+            ColorizedPrint("2. Brows all items");
+            ColorizedPrint("3. Logout");
+            string authorized_menu_input = StringUserInput();
             switch (authorized_menu_input)
             {
                 case "1":
+                case "Add new item":
+                    ColorizedPrint("Enter the name of the item:");
+                    string add_item_name_input = StringUserInput();
+                    ColorizedPrint("Enter the description of the item:");
+                    string add_item_description_input = StringUserInput();
+                    ColorizedPrint("Enter the price of the item:");
+                    string add_item_price_input = StringUserInput();
+                    Double.TryParse(add_item_price_input, out double add_item_price);
+                    items.Add(new Item(add_item_name_input, add_item_description_input, add_item_price,
+                        active_user.Username));
+                    break;
+                case "2":
+                case "Brows all items":
+                    ColorizedPrint("-----------------------------", ConsoleColor.DarkCyan);
+                    foreach (Item item in items)
+                    {
+                        if (item.BelongsTo != active_user.Username)
+                        {
+                            ColorizedPrint($"The {item.Name} with a description below");
+                            string description_to_display = item.Description != null && item.Description.Length > 0
+                                ? item.Description
+                                : "";
+                            ColorizedPrint(description_to_display);
+                            ColorizedPrint($"Belongs to {item.BelongsTo}");
+                            ColorizedPrint("-----------------------------", ConsoleColor.DarkGray);
+                        }
+                    }
+
+                    ColorizedPrint("-----------------------------", ConsoleColor.DarkCyan);
+                    ColorizedPrint("Press any key to exit...");
+                    Console.ReadLine();
+
+                    break;
+                case "3":
                 case "Logout":
                     ColorizedPrint("Login out");
                     active_user = null;
