@@ -1,5 +1,3 @@
-using static System.Console;
-
 namespace IOUtilsApp;
 
 public static class IOUtils
@@ -12,7 +10,7 @@ public static class IOUtils
     /// <remarks>Note that an empty string is an error case</remarks>
     public static string StringUserInput()
     {
-        string? input = ReadLine();
+        string? input = Console.ReadLine();
         if (input != null && input.GetType() == typeof(string))
         {
             return input;
@@ -20,12 +18,12 @@ public static class IOUtils
         else if (input != null)
         {
             Type type = input.GetType();
-            WriteLine($"Unexpected type {type} for text input");
+            Console.WriteLine($"Unexpected type {type} for text input");
             return "";
         }
         else
         {
-            WriteLine($"There is a null in text input");
+            Console.WriteLine($"There is a null in text input");
             return "";
         }
     }
@@ -47,15 +45,15 @@ public static class IOUtils
         }
         catch (FormatException error)
         {
-            WriteLine($"Ohhhh... Wrong format {error.Message}");
+            Console.WriteLine($"Ohhhh... Wrong format {error.Message}");
         }
         catch (OverflowException error)
         {
-            WriteLine($"Are you kidding me? {error.Message}");
+            Console.WriteLine($"Are you kidding me? {error.Message}");
         }
         catch (ArgumentNullException error)
         {
-            WriteLine($"That's not even funny! {error.Message}");
+            Console.WriteLine($"That's not even funny! {error.Message}");
         }
 
         return -1;
@@ -70,7 +68,7 @@ public static class IOUtils
     public static string StringUserInputWithCleanUp()
     {
         string input = StringUserInput();
-        Clear();
+        Console.Clear();
         return input;
     }
 
@@ -83,7 +81,7 @@ public static class IOUtils
     public static int IntUserInputWithCleanUp()
     {
         int input = IntUserInput();
-        Clear();
+        Console.Clear();
         return input;
     }
 
@@ -98,11 +96,39 @@ public static class IOUtils
     {
         if (background_color is ConsoleColor color)
         {
-            BackgroundColor = color;
+            Console.BackgroundColor = color;
         }
 
-        ForegroundColor = foreground_color;
-        WriteLine(print_message);
-        ResetColor();
+        Console.ForegroundColor = foreground_color;
+        Console.WriteLine(print_message);
+        Console.ResetColor();
+    }
+
+    public static string PasswordInput()
+    {
+        string password_acc = "";
+        ConsoleKeyInfo key_pressed;
+
+        while (true)
+        {
+            key_pressed = Console.ReadKey(true);
+            if (key_pressed.Equals(ConsoleKey.Enter))
+            {
+                break;
+            }
+            else if (key_pressed.Equals(ConsoleKey.Backspace))
+            {
+                if (password_acc.Length > 0)
+                {
+                    password_acc = password_acc.Substring(0, password_acc.Length - 1);
+                }
+            }
+            else
+            {
+                password_acc += key_pressed.KeyChar;
+            }
+        }
+
+        return password_acc;
     }
 }
