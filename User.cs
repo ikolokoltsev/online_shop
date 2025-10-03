@@ -4,23 +4,50 @@ namespace UserApp;
 
 class User
 {
-    public readonly Guid Id = Guid.NewGuid();
     public string Username;
     public string Email;
-    public string Password;
+    string _password;
 
     public User(string username, string email, string password)
     {
         Username = username;
         Email = email;
-        Password = password;
+        _password = password;
     }
 
-    bool HasUserExists(string userIdentity, List<User> users)
+    public bool HasEmailAlreadyUsed(string email, List<User> users)
+    {
+        return users.Any(user => user.Email == email);
+    }
+    
+    public bool HasUsernameAlreadyUsed(string email, List<User> users)
+    {
+        return users.Any(user => user.Email == email);
+    }
+
+    public bool HasUserExists(string userIdentity, List<User> users)
     {
         return users.Any(user => user.Username == userIdentity || user.Email == userIdentity);
     }
 
+    // TODO: Remove it from here to somewhere better place
+    public bool isAuthorized(string username)
+    {
+        return Username == username;
+    }
+
+    public bool TryLogIn(string userIdentity, string password, List<User> users)
+    {
+        if (HasUserExists(userIdentity, users))
+        {
+            User user = users.Find(user => user.Username == userIdentity || user.Email == userIdentity);
+            return user._password == password;
+        }
+
+        return false;
+    }
+
+    // TODO: Should I include this here?
     public void CreateUser(string username, string email, string password, List<User> users)
     {
         if (HasUserExists(username, users))
@@ -33,5 +60,9 @@ class User
             ColorizedPrint("User created", ConsoleColor.Green);
         }
     }
-    
+
+    public void PrintThing()
+    {
+        Console.WriteLine("thing");
+    }
 }
