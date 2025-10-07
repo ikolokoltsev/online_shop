@@ -1,5 +1,3 @@
-using static IOUtilsApp.IOUtils;
-
 namespace UserApp;
 
 class User
@@ -15,19 +13,11 @@ class User
         _password = password;
     }
 
-    public bool HasEmailAlreadyUsed(string email, List<User> users)
-    {
-        return users.Any(user => user.Email == email);
-    }
-    
-    public bool HasUsernameAlreadyUsed(string email, List<User> users)
-    {
-        return users.Any(user => user.Email == email);
-    }
-
     public bool HasUserExists(string userIdentity, List<User> users)
     {
-        return users.Any(user => user.Username == userIdentity || user.Email == userIdentity);
+        return users.Any(user =>
+            user.Username.Equals(userIdentity, StringComparison.OrdinalIgnoreCase) ||
+            user.Email.Equals(userIdentity, StringComparison.OrdinalIgnoreCase));
     }
 
     // TODO: Remove it from here to somewhere better place
@@ -36,33 +26,9 @@ class User
         return Username == username;
     }
 
-    public bool TryLogIn(string userIdentity, string password, List<User> users)
+    public bool TryLogIn(string userIdentity, string password)
     {
-        if (HasUserExists(userIdentity, users))
-        {
-            User user = users.Find(user => user.Username == userIdentity || user.Email == userIdentity);
-            return user._password == password;
-        }
-
-        return false;
-    }
-
-    // TODO: Should I include this here?
-    public void CreateUser(string username, string email, string password, List<User> users)
-    {
-        if (HasUserExists(username, users))
-        {
-            ColorizedPrint("You can't create user with this credentials", ConsoleColor.Red);
-        }
-        else
-        {
-            users.Add(new User(username, email, password));
-            ColorizedPrint("User created", ConsoleColor.Green);
-        }
-    }
-
-    public void PrintThing()
-    {
-        Console.WriteLine("thing");
+        return (Username.Equals(userIdentity, StringComparison.OrdinalIgnoreCase) ||
+                Email.Equals(userIdentity, StringComparison.OrdinalIgnoreCase)) && _password == password;
     }
 }
