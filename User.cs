@@ -19,16 +19,22 @@ class User
             user.Username.Equals(userIdentity, StringComparison.OrdinalIgnoreCase) ||
             user.Email.Equals(userIdentity, StringComparison.OrdinalIgnoreCase));
     }
-
-    // TODO: Remove it from here to somewhere better place
-    public bool isAuthorized(string username)
-    {
-        return Username == username;
-    }
+    
 
     public bool TryLogIn(string userIdentity, string password)
     {
         return (Username.Equals(userIdentity, StringComparison.OrdinalIgnoreCase) ||
                 Email.Equals(userIdentity, StringComparison.OrdinalIgnoreCase)) && _password == password;
+    }
+
+    public static void SaveUsersToFile(List<User> users, string fileName)
+    {
+        var users_lines = users.Select(user => $"{user.Username},{user.Email},{user._password}");
+        File.WriteAllLines(fileName, users_lines);
+    }
+
+    public static void SavveUserToFile(User user, string filePath)
+    {
+        File.AppendAllLines(filePath, new []{$"{user.Username},{user.Email},{user._password}"});
     }
 }
