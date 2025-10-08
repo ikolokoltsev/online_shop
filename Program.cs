@@ -3,24 +3,90 @@ using ItemApp;
 using TradeOfferApp;
 using static IOUtilsApp.IOUtils;
 
-bool is_main_menu = true;
-List<User> users = new List<User>();
-users.Add(new User("admin", "admin@gmail.com", "adMin"));
-users.Add(new User("JoshDub", "joshD@gmail.com", "JoshDub"));
-users.Add(new User("Leny", "mistertwister@gmail.com", "LolLul"));
-users.Add(new User("Marcus", "rick@gmail.com", "rock"));
-users.Add(new User("Robert", "lookandtook@gmail.com", "What"));
-List<Item> items = new List<Item>();
-items.Add(new Item("Ball", "it's a ball! 🤷🏻‍♂️", "admin"));
-items.Add(new Item("Table", null, "admin"));
-items.Add(new Item("Cahir", null, "Leny"));
-items.Add(new Item("Bun", null, "JoshDub"));
-items.Add(new Item("Bike", null, "JoshDub"));
-items.Add(new Item("Shoe", null, "JoshDub"));
-items.Add(new Item("Sandwich", null, "Marcus"));
-items.Add(new Item("Rock", null, "Robert"));
 
+static void FileSystemInit(List<User> users, List<Item> items, List<TradeOffer> trade_offers)
+{
+    ColorizedPrint("File system initializing!", ConsoleColor.DarkBlue);
+    if (File.Exists("users.csv"))
+    {
+        ColorizedPrint("Users file exists!", ConsoleColor.DarkGreen);
+        string[] persisted_users = File.ReadAllLines("users.csv");
+        foreach (string persisted_user in persisted_users)
+        {
+            string[] parsed_persisted_user = persisted_user.Split(",");
+            users.Add(new User(parsed_persisted_user[0], parsed_persisted_user[1], (parsed_persisted_user[2])));
+        }
+    }
+    else
+    {
+        ColorizedPrint("Users file doesn't exist!", ConsoleColor.DarkYellow);
+        users.Add(new User("admin", "admin@gmail.com", "adMin"));
+        users.Add(new User("JoshDub", "joshD@gmail.com", "JoshDub"));
+        users.Add(new User("Leny", "mistertwister@gmail.com", "LolLul"));
+        users.Add(new User("Marcus", "rick@gmail.com", "rock"));
+        users.Add(new User("Robert", "lookandtook@gmail.com", "What"));
+        ColorizedPrint("Default users initialized!", ConsoleColor.DarkGreen);
+        User.SaveUsersToFile(users, "users.csv");
+        ColorizedPrint("Users file created!", ConsoleColor.DarkGreen);
+    }
+
+    if (File.Exists("items.csv"))
+    {
+        ColorizedPrint("Items file exists!", ConsoleColor.DarkGreen);
+        string[] persisted_items = File.ReadAllLines("items.csv");
+        foreach (string persisted_item in persisted_items)
+        {
+            string[] parsed_persisted_item = persisted_item.Split(",");
+            items.Add(new Item(parsed_persisted_item[0], parsed_persisted_item[1], (parsed_persisted_item[2])));
+        }
+    }
+    else
+    {
+        ColorizedPrint("Items file doesn't exist!", ConsoleColor.DarkYellow);
+        items.Add(new Item("Ball", "it's a ball! 🤷🏻‍♂️", "admin"));
+        items.Add(new Item("Table", null, "admin"));
+        items.Add(new Item("Cahir", null, "Leny"));
+        items.Add(new Item("Bun", null, "JoshDub"));
+        items.Add(new Item("Bike", null, "JoshDub"));
+        items.Add(new Item("Shoe", null, "JoshDub"));
+        items.Add(new Item("Sandwich", null, "Marcus"));
+        items.Add(new Item("Rock", null, "Robert"));
+        ColorizedPrint("Default items initialized!", ConsoleColor.DarkGreen);
+        Item.SaveItemsToFile(items, "items.csv");
+        ColorizedPrint("Items file created!", ConsoleColor.DarkGreen);
+    }
+
+    if (File.Exists("trade_offers.csv"))
+    {
+        ColorizedPrint("Trade offers file exists!", ConsoleColor.DarkGreen);
+        string[] persisted_trade_offers = File.ReadAllLines("trade_offers.csv");
+        foreach (string persisted_trade_offer in persisted_trade_offers)
+        {
+            string[] parsed_persisted_trade_offer = persisted_trade_offer.Split(",");
+            User offer_from = users.Find(user => user.Username == parsed_persisted_trade_offer[0]);
+            User offer_to = users.Find(user => user.Username == parsed_persisted_trade_offer[1]);
+            List<Item> itemsToTrade = parsed_persisted_trade_offer[3].Split("|")
+                .Select(itemId => items.Find(item => item.ItemId == itemId)).ToList();
+            TradeOfferStatus status = Enum.Parse<TradeOfferStatus>(parsed_persisted_trade_offer[2]); 
+            trade_offers.Add(new TradeOffer(offer_from, offer_to, itemsToTrade, status));
+        }
+    }
+    else
+    {
+        ColorizedPrint("Trade offers file doesn't exist!", ConsoleColor.DarkYellow);
+        File.Create("trade_offers.csv").Close();
+        ColorizedPrint("Trade offers file created!", ConsoleColor.DarkGreen);
+    }
+}
+
+List<User> users = new List<User>();
+List<Item> items = new List<Item>();
 List<TradeOffer> trade_offers = new List<TradeOffer>();
+
+FileSystemInit(users, items, trade_offers);
+
+bool is_main_menu = true;
+
 User? active_user = null;
 
 while (is_main_menu)
@@ -31,9 +97,8 @@ while (is_main_menu)
         bool is_authorized_menu = true;
         while (is_authorized_menu)
         {
-            // AuthorizedMenu
+            Console.Clear();
             ColorizedPrint("Authorized!");
-            ColorizedPrint($"Hello {active_user.Username}");
             ColorizedPrint("Please select an option:");
             ColorizedPrint("1. Add new item");
             ColorizedPrint("2. Browse other users' items");
@@ -46,17 +111,21 @@ while (is_main_menu)
             {
                 case "1":
                 case "Add new item":
+                    Console.Clear();
                     ColorizedPrint("Enter the name of the item:");
                     string add_item_name_input = StringUserInput();
                     ColorizedPrint("Enter the description of the item:");
                     string add_item_description_input = StringUserInput();
 
-                    items.Add(new Item(add_item_name_input, add_item_description_input,
-                        active_user.Username));
+                    Item new_item = new Item(add_item_name_input, add_item_description_input,
+                        active_user.Username);
+                    items.Add(new_item);
+                    Item.SaveItemToFile(new_item, "items.csv");
                     break;
                 case "2":
                 case "Browse other users' items":
                 {
+                    Console.Clear();
                     ColorizedPrint("-----------------------------", ConsoleColor.DarkCyan);
                     Dictionary<int, Item> users_items_dict = new Dictionary<int, Item>();
                     int users_items_index = 0;
@@ -265,8 +334,10 @@ while (is_main_menu)
                                                 List<Item> combined_items = new List<Item>();
                                                 combined_items.AddRange(wanted_items);
                                                 combined_items.AddRange(offered_items);
-                                                trade_offers.Add(new TradeOffer(active_user, offer_to_user,
-                                                    combined_items));
+                                                TradeOffer new_trade_offer = new TradeOffer(active_user, offer_to_user,
+                                                    combined_items);
+                                                trade_offers.Add(new_trade_offer);
+                                                TradeOffer.SaveTradeOfferToFile(new_trade_offer, "trade_offers.csv");
                                                 ColorizedPrint("Trade offer created successfully!", ConsoleColor.Green);
                                                 ColorizedPrint("Press any key to exit...");
                                                 Console.ReadLine();
@@ -305,6 +376,7 @@ while (is_main_menu)
 
                 case "3":
                 case "Browse my trade offers":
+                    Console.Clear();
                     if (trade_offers.Count > 0)
                     {
                         List<TradeOffer> my_trade_offers = trade_offers.FindAll(trade_offer =>
@@ -356,7 +428,8 @@ while (is_main_menu)
                     break;
                 case "4":
                 case "Browse income trade offers":
-                {
+
+                    Console.Clear();
                     if (trade_offers.Count == 0)
                     {
                         ColorizedPrint("No trade offers available yet.", ConsoleColor.Yellow);
@@ -454,10 +527,10 @@ while (is_main_menu)
 
                     Console.ReadLine();
                     break;
-                }
+
                 case "5":
                 case "Browse completed requests":
-
+                    Console.Clear();
                     if (trade_offers.Count > 0)
                     {
                         List<TradeOffer> completed_trade_offers =
@@ -541,6 +614,7 @@ while (is_main_menu)
                     break;
                 case "6":
                 case "Logout":
+                    Console.Clear();
                     ColorizedPrint("Login out");
                     active_user = null;
                     is_authorized_menu = false;
@@ -607,7 +681,9 @@ while (is_main_menu)
                         string signup_email_input = StringUserInput();
                         ColorizedPrint("Enter your password:");
                         string signup_password_input = StringUserInput();
-                        users.Add(new User(signup_username_input, signup_email_input, signup_password_input));
+                        User new_user = new User(signup_username_input, signup_email_input, signup_password_input);
+                        users.Add(new_user);
+                        User.SavveUserToFile(new_user, "users.csv");
                     }
 
                     break;
