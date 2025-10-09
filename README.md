@@ -1,7 +1,9 @@
 # Trading system
 
 Yes, I called it an online shop, but... Yeah, I'm stupid, sorry about that
+
 P.S. Namings are hard
+
 Long story short, it's a console-based item trading application that allows users to create accounts, items, and
 exchange them through trade offers.
 
